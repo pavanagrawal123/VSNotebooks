@@ -68,9 +68,9 @@
       "title": "VSNotebooks configuration",
       "properties": {
         "VSNotebooks.remoteKernel": {
-          "type": "true",
+          "type": "boolean",
           "default": false,
-          "description": "Need to use a remote kernel? Use true!"
+          "description": "Need to use a remote kernel?"
         },
         "VSNotebooks.remoteKernelAddress": {
           "type": "string",
