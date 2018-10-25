@@ -143,7 +143,7 @@ export function activate(context: vscode.ExtensionContext) {
                 if (JupyterManager.getScriptsLocationIfSpecified()) {
                     if (!JupyterManager.isJupyterInPath(JupyterManager.getScriptsLocationIfSpecified())) {
                         // If its fallen in here then Jupyter doesn't exist in the custom env or path.
-                        vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip?', 'Install')
+                        vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip? Note: This defaults to the pip available on your path not environment.', 'Install')
                             .then(data => JupyterManager.installJupyter(data));
                     }
                     else {
