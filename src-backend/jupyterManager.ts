@@ -26,7 +26,7 @@ export class JupyterManager {
     /**
      * The timeout set during the initialisation of a Jupyter Notebook instance.
      */
-    private static timeout = 10; // 10 seconds
+    private static timeout = 20; // 20 seconds
     /**
      * Boolean which indicates whether the Jupyter Notebook is initialised in the current workspace.s
      */
