@@ -63,6 +63,27 @@
         "category": "IPE"
       }
     ],
+    "configuration": {
+      "type": "object",
+      "title": "VSNotebooks configuration",
+      "properties": {
+        "VSNotebooks.remoteKernel": {
+          "type": "true",
+          "default": false,
+          "description": "Need to use a remote kernel? Use true!"
+        },
+        "VSNotebooks.remoteKernelAddress": {
+          "type": "string",
+          "default": null,
+          "description": "remote kernel URL"
+        },
+        "VSNotebooks.remoteKernelToken": {
+          "type": "string",
+          "default": null,
+          "description": "remote kernel token"
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "ipe.showWebview",
