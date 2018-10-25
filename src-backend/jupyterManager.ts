@@ -204,7 +204,8 @@ export class JupyterManager {
             // need to only remove last part of path because it includes python. 
             if (path.indexOf("/") == -1) delim = "\\"; else delim = "/";
             //take the path split it, take all but last, then join it again using delim.
-            return path.split(delim).slice(0, -1).join(delim);
+            let arrString: string[] = path.split(delim).slice(0, -1).concat("Scripts");
+            return arrString.join(delim);
         }
         else {
             return undefined;
