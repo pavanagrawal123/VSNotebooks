@@ -1,6 +1,6 @@
-import { spawn, ChildProcess, execSync, exec } from 'child_process';
-import { URL } from 'url';
-import * as vscode from 'vscode';
+import { ChildProcess, exec, execSync, spawn } from "child_process";
+import { URL } from "url";
+import * as vscode from "vscode";
 
 /**
  * Class which manages the creation, deletion and maintanance of Jupyter Notebook instances.
@@ -9,6 +9,110 @@ import * as vscode from 'vscode';
  * - Identify the existing Jupyter Notebook sessions on the current machine.
  */
 export class JupyterManager {
+
+    /**
+     * Dispose the current Jupyter Notebook process.
+     * This function is called whenever the extension is closed.
+     */
+    public static disposeNotebook() {
+        if (JupyterManager.process) {
+            for (let i = 0; i <= 10 && !JupyterManager.process.killed; i++) {
+                JupyterManager.process.kill("SIGINT");
+            }
+        }
+    }
+
+    /**
+     * Find the Jupyter Notebooks running on the current machine.
+     * @returns An array containing the infos of the Jupyter Notebooks running on the current machine.
+     */
+    public static getRunningNotebooks() {
+        try {
+            const runningUrls =
+                execSync(
+                    "jupyter notebook list",
+                    { stdio: "pipe", encoding: "utf8" },
+                );
+
+            const matches = runningUrls.match(JupyterManager.urlPattern);
+
+            if (!matches) {
+                return [];
+            } else {
+                return matches.map((input) => {
+                    const url = new URL(input);
+                    return {
+                        url: input,
+                        info:
+                        {
+                            baseUrl: url.protocol + "//" + url.host + "/",
+                            token: url.searchParams.get("token"),
+                        },
+                    };
+                });
+            }
+        } catch {
+            return [];
+        }
+    }
+
+    /**
+     * Check if Jupyter Notebook is available on the current machine.
+     * @returns A boolean, true if Jupyter Notebook is present, false if it is not.
+     */
+    public static isJupyterInPath(path?: string) {
+        try {
+            // Execute jupyter -h and check if Jupyter is present in default path the output returned.
+            const jupyterHelpOutput =
+                execSync(
+                    "jupyter -h",
+                    { stdio: "pipe", encoding: "utf8", cwd: path },
+                );
+
+            return !!jupyterHelpOutput.match(/Jupyter/g);
+        } catch {
+            try {
+                const jupyterHelpOutput =
+                    execSync(
+                        `cd ${vscode.workspace.getConfiguration().get("python.pythonPath")} && jupyter -h;`,
+                        { stdio: "pipe", encoding: "utf8" },
+                    );
+                return !!jupyterHelpOutput.match(/Jupyter/g);
+            } catch {
+                return false;
+            }
+        }
+    }
+    /**
+     * Check if env is set, and return env/Scripts or null. =
+     * @returns string  Path of Script for the Python environment, if not available, null.
+     */
+    public static getScriptsLocationIfSpecified(): string {
+        if (vscode.workspace.getConfiguration().get("python.pythonPath")) {
+            const path: string = vscode.workspace.getConfiguration().get("python.pythonPath");
+            let delim: string;
+            // set delimineter to whatever the path uses.
+            // need to only remove last part of path because it includes python.
+            if (path.indexOf("/") === -1) { delim = "\\"; } else { delim = "/"; }
+            // take the path split it, take all but last, then join it again using delim.
+            const arrString: string[] = path.split(delim).slice(0, -1).concat("Scripts");
+            return arrString.join(delim);
+        } else {
+            return undefined;
+        }
+    }
+    /**
+     * Create a terminal instance on the current machine and install
+     * Jupyter Notebook through pip.
+     * @param data  User response to the vscode prompt, install Jupyter Notebook if data is defined.
+     */
+    public static installJupyter(data) {
+        if (data !== undefined) {
+            const terminal = vscode.window.createTerminal("pip");
+            terminal.show();
+            terminal.sendText("pip install jupyter", true);
+        }
+    }
 
     /**
      * The process spawned from the creation of a Jupyter Notebook instance
@@ -39,37 +143,53 @@ export class JupyterManager {
 
         if (vscode.workspace.workspaceFolders) {
             // Initialise a Jupyter Notebook in the current workspace if a workspace is set.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser', '--notebook-dir=' + vscode.workspace.workspaceFolders[0].uri.fsPath], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`jupyter`, ["notebook", "--no-browser", "--notebook-dir=" + vscode.workspace.workspaceFolders[0].uri.fsPath],
+            { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
             this.workspaceSet = true;
-        }
-        else {
+        } else {
             // Initialise a Jupyter Notebook automatically.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`jupyter`, ["notebook", "--no-browser"], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
         }
         // The stderr is process by the extractJupyterInfos function.
-        JupyterManager.process.stderr.on('data',
+        JupyterManager.process.stderr.on("data",
             (data: string) =>
-                this.extractJupyterInfos(data)
+                this.extractJupyterInfos(data),
         );
-        JupyterManager.process.stdout.on('data',
+        JupyterManager.process.stdout.on("data",
             (data: string) =>
-                this.extractJupyterInfos(data)
+                this.extractJupyterInfos(data),
         );
-        JupyterManager.process.on('close', (code) => {
+        JupyterManager.process.on("close", (code) => {
             console.log(`child process exited with code ${code}`);
         });
     }
 
     /**
-     * Dispose the current Jupyter Notebook process.
-     * This function is called whenever the extension is closed.
+     * Get infos of the jupyter notebook created.
+     * @returns A promised which is either resolved or rejected within the timeout.
      */
-    public static disposeNotebook() {
-        if (JupyterManager.process) {
-            for (let i = 0; i <= 10 && !JupyterManager.process.killed; i++) {
-                JupyterManager.process.kill('SIGINT')
-            }
-        }
+    public getJupyterAddressAndToken() {
+
+        return new Promise<{ baseUrl: string, token: string }>((resolve, reject) => {
+            // The message box should include where the Jupyter Kernel starts if it exists.
+            const title: string = "Starting a Jupyter Kernel" +
+                (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
+                    "");
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title,
+                cancellable: false,
+            }, (progress, token) => {
+                // we define an inline funciton here and pass back info from the defineTimeout because VSCode also needs a promise in order to show the loading bar.
+                const p = new Promise((res) => {
+                    this.defineTimeout(JupyterManager.timeout, (info) => {
+                        res();
+                        resolve(info);
+                    }, reject);
+                });
+                return p;
+            });
+        });
     }
 
     /**
@@ -79,7 +199,7 @@ export class JupyterManager {
      */
     private extractJupyterInfos(data: string) {
         // Look for a Jupyter Notebook url in the string received.
-        let urlMatch = JupyterManager.urlPattern.exec(data);
+        const urlMatch = JupyterManager.urlPattern.exec(data);
 
         if (urlMatch) {
             JupyterManager.url = new URL(urlMatch[0]);
@@ -99,146 +219,18 @@ export class JupyterManager {
             if (!JupyterManager.url) {
                 if (numTries == 0) {
                     JupyterManager.process.stderr.removeAllListeners();
-                    reject('Jupyter could not be executed automatically');
-                }
-                else {
+                    reject("Jupyter could not be executed automatically");
+                } else {
                     this.defineTimeout(numTries - 1, resolve, reject);
                 }
-            }
-            else {
+            } else {
                 JupyterManager.process.stderr.removeAllListeners();
                 resolve(
                     {
-                        baseUrl: JupyterManager.url.protocol + '//' + JupyterManager.url.host + '/',
-                        token: JupyterManager.url.searchParams.get('token')
+                        baseUrl: JupyterManager.url.protocol + "//" + JupyterManager.url.host + "/",
+                        token: JupyterManager.url.searchParams.get("token"),
                     });
             }
         }, 1000);
-    }
-
-    /**
-     * Get infos of the jupyter notebook created.
-     * @returns A promised which is either resolved or rejected within the timeout.
-     */
-    public getJupyterAddressAndToken() {
-
-        return new Promise<{ baseUrl: string, token: string }>((resolve, reject) => {
-            // The message box should include where the Jupyter Kernel starts if it exists. 
-            let title: string = "Starting a Jupyter Kernel" +
-                (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
-                    "");
-            vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: title,
-                cancellable: false
-            }, (progress, token) => {
-                // we define an inline funciton here and pass back info from the defineTimeout because VSCode also needs a promise in order to show the loading bar.
-                var p = new Promise(res => {
-                    this.defineTimeout(JupyterManager.timeout, (info) => {
-                        res();
-                        resolve(info);
-                    }, reject);
-                });
-                return p;
-            })
-        });
-    }
-
-    /**
-     * Find the Jupyter Notebooks running on the current machine.
-     * @returns An array containing the infos of the Jupyter Notebooks running on the current machine.
-     */
-    public static getRunningNotebooks() {
-        try {
-            let runningUrls =
-                execSync(
-                    'jupyter notebook list',
-                    { stdio: 'pipe', encoding: 'utf8' }
-                );
-
-            let matches = runningUrls.match(JupyterManager.urlPattern);
-
-            if (!matches) {
-                return [];
-            }
-            else {
-                return matches.map(input => {
-                    let url = new URL(input);
-                    return {
-                        url: input,
-                        info:
-                        {
-                            baseUrl: url.protocol + '//' + url.host + '/',
-                            token: url.searchParams.get('token')
-                        }
-                    };
-                });
-            }
-        }
-        catch{
-            return [];
-        }
-    }
-
-    /**
-     * Check if Jupyter Notebook is available on the current machine.
-     * @returns A boolean, true if Jupyter Notebook is present, false if it is not.
-     */
-    public static isJupyterInPath(path?: string) {
-        try {
-            // Execute jupyter -h and check if Jupyter is present in default path the output returned.
-            let jupyterHelpOutput =
-                execSync(
-                    'jupyter -h',
-                    { stdio: 'pipe', encoding: 'utf8', cwd: path }
-                );
-
-            return !!jupyterHelpOutput.match(/Jupyter/g);
-        }
-        catch{
-            try {
-                let jupyterHelpOutput =
-                    execSync(
-                        `cd ${vscode.workspace.getConfiguration().get('python.pythonPath')} && jupyter -h;`,
-                        { stdio: 'pipe', encoding: 'utf8' }
-                    );
-                return !!jupyterHelpOutput.match(/Jupyter/g);
-            }
-            catch {
-                return false;
-            }
-        }
-    }
-    /**
-     * Check if env is set, and return env/Scripts or null. =
-
-     * @returns string  Path of Script for the Python environment, if not available, null.
-     */
-    public static getScriptsLocationIfSpecified(): string {
-        if (vscode.workspace.getConfiguration().get('python.pythonPath')) {
-            let path: string = vscode.workspace.getConfiguration().get('python.pythonPath');
-            let delim: string;
-            //set delimineter to whatever the path uses.
-            // need to only remove last part of path because it includes python. 
-            if (path.indexOf("/") == -1) delim = "\\"; else delim = "/";
-            //take the path split it, take all but last, then join it again using delim.
-            let arrString: string[] = path.split(delim).slice(0, -1).concat("Scripts");
-            return arrString.join(delim);
-        }
-        else {
-            return undefined;
-        }
-    }
-    /**
-     * Create a terminal instance on the current machine and install
-     * Jupyter Notebook through pip.
-     * @param data  User response to the vscode prompt, install Jupyter Notebook if data is defined.
-     */
-    public static installJupyter(data) {
-        if (data !== undefined) {
-            let terminal = vscode.window.createTerminal('pip');
-            terminal.show();
-            terminal.sendText('pip install jupyter', true);
-        }
     }
 }
