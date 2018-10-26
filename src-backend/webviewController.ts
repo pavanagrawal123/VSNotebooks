@@ -129,8 +129,8 @@ export class WebviewController {
                 vscode.ViewColumn.Two,
                 {
                     enableScripts: true,
-                    retainContextWhenHidden: true,
                     localResourceRoots: [vscode.Uri.file(this.context.extensionPath)],
+                    retainContextWhenHidden: true,
                 },
             );
             // Open the frontend interface in the webview

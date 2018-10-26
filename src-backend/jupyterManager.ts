@@ -143,12 +143,14 @@ export class JupyterManager {
 
         if (vscode.workspace.workspaceFolders) {
             // Initialise a Jupyter Notebook in the current workspace if a workspace is set.
-            JupyterManager.process = spawn(`jupyter`, ["notebook", "--no-browser", "--notebook-dir=" + vscode.workspace.workspaceFolders[0].uri.fsPath],
+            JupyterManager.process = spawn(`jupyter`,
+            ["notebook", "--no-browser", "--notebook-dir=" + vscode.workspace.workspaceFolders[0].uri.fsPath],
             { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
             this.workspaceSet = true;
         } else {
             // Initialise a Jupyter Notebook automatically.
-            JupyterManager.process = spawn(`jupyter`, ["notebook", "--no-browser"], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`jupyter`,
+            ["notebook", "--no-browser"], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
         }
         // The stderr is process by the extractJupyterInfos function.
         JupyterManager.process.stderr.on("data",
