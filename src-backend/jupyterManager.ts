@@ -124,23 +124,23 @@ export class JupyterManager {
 
         return new Promise<{ baseUrl: string, token: string }>((resolve, reject) => {
             // The message box should include where the Jupyter Kernel starts if it exists. 
-            let title: string = "Starting a Jupyter Kernel" + 
-            (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
-            "");
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: title,
-                    cancellable: false
-                }, (progress, token) => {
-                    // we define an inline funciton here and pass back info from the defineTimeout because VSCode also needs a promise in order to show the loading bar.
-                    var p = new Promise(res => {
-                        this.defineTimeout(JupyterManager.timeout, (info) => {
-                            res();
-                            resolve(info);
-                        }, reject);
-                    });
-                    return p;
-                })
+            let title: string = "Starting a Jupyter Kernel" +
+                (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
+                    "");
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: title,
+                cancellable: false
+            }, (progress, token) => {
+                // we define an inline funciton here and pass back info from the defineTimeout because VSCode also needs a promise in order to show the loading bar.
+                var p = new Promise(res => {
+                    this.defineTimeout(JupyterManager.timeout, (info) => {
+                        res();
+                        resolve(info);
+                    }, reject);
+                });
+                return p;
+            })
         });
     }
 
