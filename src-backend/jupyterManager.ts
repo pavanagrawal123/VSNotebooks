@@ -26,7 +26,7 @@ export class JupyterManager {
     /**
      * The timeout set during the initialisation of a Jupyter Notebook instance.
      */
-    private static timeout = 10; // 10 seconds
+    private static timeout = 20; // 20 seconds
     /**
      * Boolean which indicates whether the Jupyter Notebook is initialised in the current workspace.s
      */
@@ -44,7 +44,7 @@ export class JupyterManager {
         }
         else {
             // Initialise a Jupyter Notebook automatically.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser'], { detached: false,  cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
         }
         // The stderr is process by the extractJupyterInfos function.
         JupyterManager.process.stderr.on('data',
@@ -121,8 +121,26 @@ export class JupyterManager {
      * @returns A promised which is either resolved or rejected within the timeout.
      */
     public getJupyterAddressAndToken() {
+
         return new Promise<{ baseUrl: string, token: string }>((resolve, reject) => {
-            this.defineTimeout(JupyterManager.timeout, resolve, reject);
+            // The message box should include where the Jupyter Kernel starts if it exists. 
+            let title: string = "Starting a Jupyter Kernel" +
+                (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
+                    "");
+            vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: title,
+                cancellable: false
+            }, (progress, token) => {
+                // we define an inline funciton here and pass back info from the defineTimeout because VSCode also needs a promise in order to show the loading bar.
+                var p = new Promise(res => {
+                    this.defineTimeout(JupyterManager.timeout, (info) => {
+                        res();
+                        resolve(info);
+                    }, reject);
+                });
+                return p;
+            })
         });
     }
 
