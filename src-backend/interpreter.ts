@@ -62,7 +62,7 @@ export class Interpreter {
             if (kernelName === 'python3'){
                 this.executeCode('%matplotlib inline', 'python3');
             }
-            if (['python2', 'python3', 'python3'].includes(kernelName) && vscode.workspace.workspaceFolders) {
+            if (kernelName === 'python3' && vscode.workspace.workspaceFolders) {
                 this.executeCode('%cd ' + vscode.workspace.workspaceFolders[0].uri.fsPath, kernelName);
             }
         }

@@ -9,7 +9,7 @@ import { UserInteraction } from "./userInteraction";
 import { JupyterManager } from './jupyterManager';
 import { CardManager } from './cardManager';
 import { JSONObject } from '@phosphor/coreutils';
-import {ContentHelpers} from './contentHelpers';
+import { ContentHelpers } from './contentHelpers';
 
 export function activate(context: vscode.ExtensionContext) {
     /**
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
      * Manages the interaction between VSCode ui elements and the user.
      */
     let userInteraction: UserInteraction = new UserInteraction(context);
-    
+
     /**
      * Boolean which keeps track of the state of the output pane.
      */
@@ -99,11 +99,11 @@ export function activate(context: vscode.ExtensionContext) {
      * Initialise the output pane and set up the interpreter.
      * @param param0    interface containing the base url and the token of the current Jupyter Notebook.
      */
-    function initialisePanel({baseUrl, token}) {
+    function initialisePanel({ baseUrl, token }) {
         // Connect to the server defined
         interpreter.connectToServer(baseUrl, token);
         // Start needed kernel
-        interpreter.startKernel(UserInteraction.determineKernel());  
+        interpreter.startKernel(UserInteraction.determineKernel());
 
         // Execute code when new card is created
         userInteraction.onNewCard(sourceCode => {
@@ -129,24 +129,20 @@ export function activate(context: vscode.ExtensionContext) {
      */
     userInteraction.onShowPane(() => {
         if (!panelInitialised) {
-            // Check if Jupyter Notebook is installed on the local machine
-            if (!JupyterManager.isJupyterInPath()) {
-                // Ask the user to install Jupyter Notebook if not present
-                vscode.window.showInformationMessage('The IPE extension requires Jupyter to be installed. Install now?', 'Install')
-                    .then(data => JupyterManager.installJupyter(data));
-            } else {
-                // Create a Jupyter Notebook instance automatically
-                let jupyterManager = new JupyterManager();
-                jupyterManager.getJupyterAddressAndToken()
-                    .then(info => {
-                        initialisePanel(info);
-                        if(jupyterManager.workspaceSet) {
-                            localJupyter = true;
-                        }
-                    })
-                    .catch(error => vscode.window.showErrorMessage('Error could not start: ' + error));
+            // Check if user wants to use a remote kernel
+            if (vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernel')) {
+                let config = {
+                    baseUrl: vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernelAddress'),
+                    token: vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernelToken'),
+                }
+                initialisePanel(config);
             }
-        
+            // else just try to run it locally
+            else {
+                // custom location for jupyter?
+                localJupyter = initialiseJupyterLocally(initialisePanel, localJupyter);
+            }
+
         } else {
             webview.show();
             // Reset the state of the backend card array when the output pane is closed and opened again
@@ -161,40 +157,35 @@ export function activate(context: vscode.ExtensionContext) {
     userInteraction.onFullSetup(() => {
         if (!panelInitialised) {
             // Check if Jupyter Manager is installed on the local machine
-            if (!JupyterManager.isJupyterInPath()) {
-                // Ask the user to install Jupyter Manager if not present
-                vscode.window.showInformationMessage('The IPE extension requires Jupyter to be installed. Install now?', 'Install')
-                    .then(data => JupyterManager.installJupyter(data));
-            } else {
-                let choices = ['Create a new notebook', 'Enter details manually'];
-                let runningNotebooks = JupyterManager.getRunningNotebooks();
-                runningNotebooks.map(input => {
-                    choices.push(input.url);
-                });
-                /**
-                 * Propose different options to the user:
-                 * - Create a new Jupyter Notebook automatically.
-                 * - Enter the infos of an existing Jupyter Notebook instance manually.
-                 * - Choose an existing session of Jupyter Notebook running on the current machine.
-                 */
-                vscode.window.showQuickPick(choices).then(choice => {
-                    if (choice === 'Create a new notebook') {
-                        let jupyterManager = new JupyterManager();
-                        jupyterManager.getJupyterAddressAndToken()
-                            .then(info => {
-                                initialisePanel(info);
-                                if(jupyterManager.workspaceSet) {
-                                    localJupyter = true;
-                                }
-                            })
-                            .catch(() => vscode.window.showErrorMessage('Could not start a notebook automatically'));
-                    } else if (choice === 'Enter details manually') {
+
+            let choices = ['Create a new notebook', 'Enter details manually'];
+            let runningNotebooks = JupyterManager.getRunningNotebooks();
+            runningNotebooks.map(input => {
+                choices.push(input.url);
+            });
+            /**
+             * Propose different options to the user:
+             * - Create a new Jupyter Notebook automatically.
+             * - Enter the infos of an existing Jupyter Notebook instance manually.
+             * - Choose an existing session of Jupyter Notebook running on the current machine.
+             */
+            vscode.window.showQuickPick(choices).then(choice => {
+                switch (choice) {
+                    // Create a new notebook
+                    case choices[0]:
+                        localJupyter = initialiseJupyterLocally(initialisePanel, localJupyter);
+                        break;
+                    // Enter details maually - Remote kernel
+                    case choices[1]:
                         UserInteraction.askJupyterInfo().then(initialisePanel);
-                    } else if(choice) {
-                        initialisePanel(runningNotebooks.filter(input => input.url === choice)[0].info);
-                    }
-                });
-            }
+                        break;
+                    default:
+                        if (choice) {
+                            initialisePanel(runningNotebooks.filter(input => input.url === choice)[0].info);
+                        }
+                        break;
+                }
+            });
         }
     });
 
@@ -215,8 +206,8 @@ export function activate(context: vscode.ExtensionContext) {
     * user wants to import a notebook.
     */
     userInteraction.onImportNotebook(() => {
-        if(panelInitialised){
-            let options: vscode.OpenDialogOptions = { canSelectMany : true, filters : { 'Jupyter Notebook': ['ipynb'] } };
+        if (panelInitialised) {
+            let options: vscode.OpenDialogOptions = { canSelectMany: true, filters: { 'Jupyter Notebook': ['ipynb'] } };
             vscode.window.showOpenDialog(options).then(fileUris => {
                 fileUris.map(fileUri => {
                     vscode.window.showTextDocument(fileUri).then(textEditor => {
@@ -240,11 +231,57 @@ export function activate(context: vscode.ExtensionContext) {
             // Open new kernel if new file is in a different language
             let kernel = UserInteraction.determineKernel();
             interpreter.startKernel(kernel);
-            if (kernel==="python3") {
+            if (kernel === "python3") {
                 interpreter.autoImportModules();
             }
         }
     });
+}
+/**
+     * Initialise Jupyter locally at a specific path or general path wherever appropriate.
+     * @param initialisePanel  call back to initialisePanel
+     * @param localJupyter current val of Local Jupyter
+     */
+function initialiseJupyterLocally(initialisePanel: ({ baseUrl, token }: { baseUrl: any; token: any; }) => void, localJupyter: boolean) {
+    if (JupyterManager.getScriptsLocationIfSpecified()) {
+        if (!JupyterManager.isJupyterInPath(JupyterManager.getScriptsLocationIfSpecified())) {
+            // If its fallen in here then Jupyter doesn't exist in the custom env or path.
+            vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip? Note: This defaults to the pip available on your path not environment.', 'Install')
+                .then(data => JupyterManager.installJupyter(data));
+        }
+        else {
+            let jupyterManager = new JupyterManager();
+            jupyterManager.getJupyterAddressAndToken()
+                .then(info => {
+                    initialisePanel(info);
+                    if (jupyterManager.workspaceSet) {
+                        localJupyter = true;
+                    }
+                })
+                .catch(error => vscode.window.showErrorMessage('Error could not start: ' + error));
+        }
+    }
+    // use default path.
+    else {
+        if (!JupyterManager.isJupyterInPath()) {
+            // Ask the user to install Jupyter Notebook if not present
+            vscode.window.showInformationMessage('The IPE extension requires Jupyter to be installed. Install now?', 'Install')
+                .then(data => JupyterManager.installJupyter(data));
+        }
+        else {
+            // Create a Jupyter Notebook instance automatically
+            let jupyterManager = new JupyterManager();
+            jupyterManager.getJupyterAddressAndToken()
+                .then(info => {
+                    initialisePanel(info);
+                    if (jupyterManager.workspaceSet) {
+                        localJupyter = true;
+                    }
+                })
+                .catch(error => vscode.window.showErrorMessage('Error could not start: ' + error));
+        }
+    }
+    return localJupyter;
 }
 
 /**
