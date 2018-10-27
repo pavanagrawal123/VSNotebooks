@@ -88,6 +88,7 @@ pre {
 
 /* Title Edit Box */
 .title {
+  display: inline;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -96,6 +97,10 @@ pre {
   -webkit-margin-before: 0.4em;
   -webkit-margin-after: 0.4em;
   -webkit-margin-start: 5px;
+}
+.title * {
+  display: inline;
+  width: fit-content;
 }
 
 input {

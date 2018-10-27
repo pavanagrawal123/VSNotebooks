@@ -15,6 +15,28 @@
       <button id="moveDownButton" class="react toolbar-icon" (click)="move('down')">
         <i title="Move Down" class="ms-Icon ms-Icon--ChevronDown" aria-label="Move Down"></i>
       </button>
+      <div class="title">
+        <div *ngIf="!editingTitle || isSelecting">
+          <button id="editingTitleButton" class="react full-left" (click)="editingTitle = true" [disabled]="isSelecting">
+            <div class="title" [innerHTML]="card.title | highlight : searchQuery"></div>
+          </button>
+        </div>
+        <div class="edit-title" *ngIf="editingTitle && !isSelecting">
+          <input #titleEditInput
+                id="titleEditInput"
+                placeholder="Title"
+                Autofocus
+                [value]="card.title"
+                (keydown.enter)="card.title = titleEditInput.value; changeTitle()"
+                (keydown.esc)="editingTitle = false">
+          <button id="acceptButton" class="react" (click)="card.title = titleEditInput.value; changeTitle()">
+            <i title="Accept" class="ms-Icon ms-Icon--Accept" aria-label="Accept"></i>
+          </button>
+          <button id="clearButton" class="red" (click)="editingTitle = false">
+            <i title="Cancel" class="ms-Icon ms-Icon--Clear" aria-label="Cancel"></i>
+          </button>
+        </div>
+      </div>
       <button id="deleteButton" class="red right" (click)="deleteCard()">
         <i title="Delete" class="ms-Icon ms-Icon--Clear" aria-label="Delete"></i>
       </button>
@@ -25,26 +47,7 @@
         <i title="Open in Browser" class="ms-Icon ms-Icon--MiniExpand" aria-label="Open in Browser"></i>
       </button>
     </span>
-    <div *ngIf="!editingTitle || isSelecting">
-      <button id="editingTitleButton" class="react full-left" (click)="editingTitle = true" [disabled]="isSelecting">
-        <div class="title" [innerHTML]="card.title | highlight : searchQuery"></div>
-      </button>
-    </div>
-    <div class="edit-title" *ngIf="editingTitle && !isSelecting">
-      <input #titleEditInput
-            id="titleEditInput"
-            placeholder="Title"
-            Autofocus
-            [value]="card.title"
-            (keydown.enter)="card.title = titleEditInput.value; changeTitle()"
-            (keydown.esc)="editingTitle = false">
-      <button id="acceptButton" class="react" (click)="card.title = titleEditInput.value; changeTitle()">
-        <i title="Accept" class="ms-Icon ms-Icon--Accept" aria-label="Accept"></i>
-      </button>
-      <button id="clearButton" class="red" (click)="editingTitle = false">
-        <i title="Cancel" class="ms-Icon ms-Icon--Clear" aria-label="Cancel"></i>
-      </button>
-    </div>
+    
 
     <div *ngIf="!card.collapsed">
       <hr>
