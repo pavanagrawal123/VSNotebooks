@@ -1,6 +1,6 @@
 {
-  "name": "VSNotebooks",
-  "displayName": "VSNotebooks",
+  "name": "VSNotebooksBeta",
+  "displayName": "VSNotebooksBeta",
   "description": "Interactive Programming Experience for Data Scientists",
   "version": "1.4.0",
   "license": "MIT",

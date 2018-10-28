@@ -1,9 +1,9 @@
 .card-container {
   background-color: rgba(170, 170, 170, 0.15);
   border-radius: 3px;
-  border: 2px solid rgba(85, 85, 85, 0.3);
+  border: 1px solid rgba(85, 85, 85, 0.4);
   padding: 5px 0;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   user-select: none;
   cursor: default;
 }
@@ -30,12 +30,7 @@ button {
 }
 
 /* Toolbar Icons */
-.toolbar-icon {
-  opacity: 0;
-}
-.card-container:hover .toolbar-icon {
-  opacity: 1;
-}
+
 .react:hover {
   color: rgb(0, 119, 198);
 }
@@ -69,6 +64,7 @@ pre {
   overflow-x: scroll;
 }
 .output-plain {
+  margin: 5px 2px;
   word-wrap: break-word;
   overflow: hidden;
   white-space: pre-line;
@@ -77,6 +73,10 @@ pre {
   font-family: Menlo, Monaco, "Courier New", monospace;
   overflow-x: scroll;
   white-space: pre;
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
 }
 .output-math {
   flex: 1;
@@ -88,14 +88,16 @@ pre {
 
 /* Title Edit Box */
 .title {
+  display: inline;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 16px;
   font-weight: bold;
-  -webkit-margin-before: 0.4em;
-  -webkit-margin-after: 0.4em;
-  -webkit-margin-start: 5px;
+}
+.title * {
+  display: inline;
+  width: fit-content;
 }
 
 input {
@@ -132,4 +134,7 @@ button:disabled,
 button:disabled:hover {
   user-select: none;
   color: var(--color) !important;
+}
+.ms-Icon {
+  font-size: 9px;
 }

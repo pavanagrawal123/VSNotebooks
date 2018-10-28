@@ -4,47 +4,50 @@
     (click)="selectCard()"
     [style.cursor]="isSelecting ? 'pointer' : 'default'">
   <!-- Card toolbar -->
-  <span class="card-toolbar" [style.visibility]="isSelecting ? 'hidden' : 'visible'">
-    <button id="moveUpButton" class="react toolbar-icon" (click)="move('up')">
-      <i title="Move Up" class="ms-Icon ms-Icon--ChevronUp" aria-label="Move Up"></i>
-    </button>
-    <button id="moveDownButton" class="react toolbar-icon" (click)="move('down')">
-      <i title="Move Down" class="ms-Icon ms-Icon--ChevronDown" aria-label="Move Down"></i>
-    </button>
-    <button id="deleteButton" class="red right" (click)="deleteCard()">
-      <i title="Delete" class="ms-Icon ms-Icon--Clear" aria-label="Delete"></i>
-    </button>
-    <button id="collapseButton" class="react toolbar-icon right" (click)="collapseCard()" [style.opacity]="card.collapsed ? '1' : ''">
-      <i title="Minimize" class="ms-Icon ms-Icon--ChromeMinimize" aria-label="Minimize"></i>
-    </button>
-    <button *ngIf="!card.isCustomMarkdown" class="react toolbar-icon right" (click)="openIn()">
-      <i title="Open in Browser" class="ms-Icon ms-Icon--MiniExpand" aria-label="Open in Browser"></i>
-    </button>
-  </span>
+  
 
   <!-- Card title and title edit box -->
   <div *ngIf="!card.isCustomMarkdown">
-
-    <div *ngIf="!editingTitle || isSelecting">
-      <button id="editingTitleButton" class="react full-left" (click)="editingTitle = true" [disabled]="isSelecting">
-        <div class="title" [innerHTML]="card.title | highlight : searchQuery"></div>
+    <span class="card-toolbar">
+      <button id="moveUpButton" class="react toolbar-icon" (click)="move('up')">
+        <i title="Move Up" class="ms-Icon ms-Icon--ChevronUp" aria-label="Move Up"></i>
       </button>
-    </div>
-    <div class="edit-title" *ngIf="editingTitle && !isSelecting">
-      <input #titleEditInput
-            id="titleEditInput"
-            placeholder="Title"
-            Autofocus
-            [value]="card.title"
-            (keydown.enter)="card.title = titleEditInput.value; changeTitle()"
-            (keydown.esc)="editingTitle = false">
-      <button id="acceptButton" class="react" (click)="card.title = titleEditInput.value; changeTitle()">
-        <i title="Accept" class="ms-Icon ms-Icon--Accept" aria-label="Accept"></i>
+      <button id="moveDownButton" class="react toolbar-icon" (click)="move('down')">
+        <i title="Move Down" class="ms-Icon ms-Icon--ChevronDown" aria-label="Move Down"></i>
       </button>
-      <button id="clearButton" class="red" (click)="editingTitle = false">
-        <i title="Cancel" class="ms-Icon ms-Icon--Clear" aria-label="Cancel"></i>
+      <div class="title">
+        <div *ngIf="!editingTitle || isSelecting">
+          <button id="editingTitleButton" class="react full-left" (click)="editingTitle = true" [disabled]="isSelecting">
+            <div class="title" [innerHTML]="card.title | highlight : searchQuery"></div>
+          </button>
+        </div>
+        <div class="edit-title" *ngIf="editingTitle && !isSelecting">
+          <input #titleEditInput
+                id="titleEditInput"
+                placeholder="Title"
+                Autofocus
+                [value]="card.title"
+                (keydown.enter)="card.title = titleEditInput.value; changeTitle()"
+                (keydown.esc)="editingTitle = false">
+          <button id="acceptButton" class="react" (click)="card.title = titleEditInput.value; changeTitle()">
+            <i title="Accept" class="ms-Icon ms-Icon--Accept" aria-label="Accept"></i>
+          </button>
+          <button id="clearButton" class="red" (click)="editingTitle = false">
+            <i title="Cancel" class="ms-Icon ms-Icon--Clear" aria-label="Cancel"></i>
+          </button>
+        </div>
+      </div>
+      <button id="deleteButton" class="red right" (click)="deleteCard()">
+        <i title="Delete" class="ms-Icon ms-Icon--Clear" aria-label="Delete"></i>
       </button>
-    </div>
+      <button id="collapseButton" class="react toolbar-icon right" (click)="collapseCard()" [style.opacity]="card.collapsed ? '1' : ''">
+        <i title="Minimize" class="ms-Icon ms-Icon--ChromeMinimize" aria-label="Minimize"></i>
+      </button>
+      <button *ngIf="!card.isCustomMarkdown" class="react toolbar-icon right" (click)="openIn()">
+        <i title="Open in Browser" class="ms-Icon ms-Icon--MiniExpand" aria-label="Open in Browser"></i>
+      </button>
+    </span>
+    
 
     <div *ngIf="!card.collapsed">
       <hr>
