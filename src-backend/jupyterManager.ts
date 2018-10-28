@@ -186,6 +186,7 @@ export class JupyterManager {
      */
     public static isJupyterInPath(path?: string) {
         try {
+            process.platform
             // Execute jupyter -h and check if Jupyter is present in default path the output returned.
             let jupyterHelpOutput =
                 execSync(
@@ -210,7 +211,7 @@ export class JupyterManager {
         }
     }
     /**
-     * Check if env is set, and return env/Scripts or null. =
+     * Check if env is set, and return env/Scripts/bin or null. =
 
      * @returns string  Path of Script for the Python environment, if not available, null.
      */
@@ -221,8 +222,10 @@ export class JupyterManager {
             //set delimineter to whatever the path uses.
             // need to only remove last part of path because it includes python. 
             if (path.indexOf("/") == -1) delim = "\\"; else delim = "/";
+            // if platform windows, then using Script else use bin.
+            let concat =  /^win/.test(process.platform) ? "Scripts" : "bin";
             //take the path split it, take all but last, then join it again using delim.
-            let arrString: string[] = path.split(delim).slice(0, -1).concat("Scripts");
+            let arrString: string[] = path.split(delim).slice(0, -1).concat(concat);
             return arrString.join(delim);
         }
         else {
