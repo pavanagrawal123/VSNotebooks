@@ -39,12 +39,12 @@ export class JupyterManager {
 
         if (vscode.workspace.workspaceFolders) {
             // Initialise a Jupyter Notebook in the current workspace if a workspace is set.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser', '--notebook-dir=' + vscode.workspace.workspaceFolders[0].uri.fsPath], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`${/^win/.test(process.platform) ? "" : "./"}jupyter`, ['notebook', '--no-browser', '--notebook-dir=' + vscode.workspace.workspaceFolders[0].uri.fsPath], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
             this.workspaceSet = true;
         }
         else {
             // Initialise a Jupyter Notebook automatically.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn(`${/^win/.test(process.platform) ? "" : "./"}jupyter`, ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
         }
         // The stderr is process by the extractJupyterInfos function.
         JupyterManager.process.stderr.on('data',
@@ -190,24 +190,14 @@ export class JupyterManager {
             // Execute jupyter -h and check if Jupyter is present in default path the output returned.
             let jupyterHelpOutput =
                 execSync(
-                    'jupyter -h',
+                    `${/^win/.test(process.platform) ? "" : "./"}jupyter -h`,
                     { stdio: 'pipe', encoding: 'utf8', cwd: path }
                 );
 
             return !!jupyterHelpOutput.match(/Jupyter/g);
         }
-        catch{
-            try {
-                let jupyterHelpOutput =
-                    execSync(
-                        `cd ${vscode.workspace.getConfiguration().get('python.pythonPath')} && jupyter -h;`,
-                        { stdio: 'pipe', encoding: 'utf8' }
-                    );
-                return !!jupyterHelpOutput.match(/Jupyter/g);
-            }
-            catch {
-                return false;
-            }
+        catch (error) {
+            return false;
         }
     }
     /**
@@ -223,9 +213,13 @@ export class JupyterManager {
             // need to only remove last part of path because it includes python. 
             if (path.indexOf("/") == -1) delim = "\\"; else delim = "/";
             // if platform windows, then using Script else use bin.
-            let concat =  /^win/.test(process.platform) ? "Scripts" : "bin";
-            //take the path split it, take all but last, then join it again using delim.
-            let arrString: string[] = path.split(delim).slice(0, -1).concat(concat);
+            // take the path split it, take all but last,
+            let arrString: string[] = path.split(delim).slice(0, -1);
+            // based on platform, do some custom stuff.
+            if (/^win/.test(process.platform)) {
+                arrString.concat("Scripts");
+            }
+            // then join it again using delim.
             return arrString.join(delim);
         }
         else {
