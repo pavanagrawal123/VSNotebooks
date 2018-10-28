@@ -1,8 +1,8 @@
-import * as vscode from "vscode";
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
+import * as vscode from "vscode";
 
-import { Card } from 'neuron-ipe-types';
+import { Card } from "neuron-ipe-types";
 import {Event, EventEmitter} from "vscode";
 
 /**
@@ -16,7 +16,7 @@ export class WebviewController {
     /**
      * Contains the webview panel.
      */
-    panel: vscode.WebviewPanel | undefined = undefined;
+    public panel: vscode.WebviewPanel | undefined = undefined;
 
     /**
      * Event triggered when the webview is closed.
@@ -41,25 +41,25 @@ export class WebviewController {
      */
     private _onDeleteCard: EventEmitter<number> = new EventEmitter();
     get onDeleteCard(): Event<number> { return this._onDeleteCard.event; }
-    
+
     /**
      * Event triggered when the title of a card is changed.
      */
     private _onChangeTitle: EventEmitter<{index: number, newTitle: string}> = new EventEmitter();
     get onChangeTitle(): Event<{index: number, newTitle: string}> { return this._onChangeTitle.event; }
-    
+
     /**
      * Event triggered when the source code of a card is collapsed.
      */
     private _onCollapseCode: EventEmitter<{index: number, value: boolean}> = new EventEmitter();
     get onCollapseCode(): Event<{index: number, value: boolean}> { return this._onCollapseCode.event; }
-    
+
     /**
      * Event triggered when the output of a card is collapsed.
      */
     private _onCollapseOutput: EventEmitter<{index: number, value: boolean}> = new EventEmitter();
     get onCollapseOutput(): Event<{index: number, value: boolean}> { return this._onCollapseOutput.event; }
-    
+
     /**
      * Event triggared when a card is collapsed.
      */
@@ -72,7 +72,7 @@ export class WebviewController {
      */
     private _onAddCustomCard: EventEmitter<Card> = new EventEmitter();
     get onAddCustomCard(): Event<Card> { return this._onAddCustomCard.event; }
-    
+
     /**
      * Event triggared when a custom card (markdown cards) is edited.
      */
@@ -118,25 +118,25 @@ export class WebviewController {
      * the communication messages triggered by user interaction
      * and code execution are also defined.
      */
-    show() {
+    public show() {
         if (this.panel) {
             // If we already have a panel, show it in the target column
             this.panel.reveal(vscode.ViewColumn.Two);
         } else {
             this.panel = vscode.window.createWebviewPanel(
-                'outputPane',
+                "outputPane",
                 "Output pane",
                 vscode.ViewColumn.Two,
                 {
                     enableScripts: true,
+                    localResourceRoots: [vscode.Uri.file(this.context.extensionPath)],
                     retainContextWhenHidden: true,
-                    localResourceRoots: [vscode.Uri.file(this.context.extensionPath)]
-                }
+                },
             );
             // Open the frontend interface in the webview
-            let htmlFile = path.join(this.context.extensionPath, "html", "index.html");
-            let basePath = vscode.Uri.file(this.context.extensionPath).with({ scheme: 'vscode-resource' });
-            let htmlSource = fs.readFileSync(htmlFile, 'utf-8');
+            const htmlFile = path.join(this.context.extensionPath, "html", "index.html");
+            const basePath = vscode.Uri.file(this.context.extensionPath).with({ scheme: "vscode-resource" });
+            let htmlSource = fs.readFileSync(htmlFile, "utf-8");
             htmlSource = htmlSource.replace('<base href="">', '<base href="' + basePath.toString() + '/html/">');
 
             this.panel.webview.html = htmlSource;
@@ -148,52 +148,52 @@ export class WebviewController {
             }, null, this.context.subscriptions);
 
             // Process the messages received from the frontend and trigger the relevant events.
-            this.panel.webview.onDidReceiveMessage(message => {
-                switch (message.command){
-                    case 'moveCardUp':
+            this.panel.webview.onDidReceiveMessage((message) => {
+                switch (message.command) {
+                    case "moveCardUp":
                         this._onMoveCardUp.fire(message.index);
                         break;
-                    case 'moveCardDown':
+                    case "moveCardDown":
                         this._onMoveCardDown.fire(message.index);
                         break;
-                    case 'deleteCard':
+                    case "deleteCard":
                         this._onDeleteCard.fire(message.index);
                         break;
-                    case 'changeTitle':
+                    case "changeTitle":
                         this._onChangeTitle.fire({index: message.index, newTitle: message.newTitle});
                         break;
-                    case 'collapseCode':
+                    case "collapseCode":
                         this._onCollapseCode.fire({index: message.index, value: message.value});
                         break;
-                    case 'collapseOutput':
+                    case "collapseOutput":
                         this._onCollapseOutput.fire({index: message.index, value: message.value});
                         break;
-                    case 'collapseCard':
+                    case "collapseCard":
                         this._onCollapseCard.fire({index: message.index, value: message.value});
                         break;
-                    case 'addCustomCard':
+                    case "addCustomCard":
                         this._onAddCustomCard.fire(message.card);
                         break;
-                    case 'editCustomCard':
+                    case "editCustomCard":
                         this._onEditCustomCard.fire({index: message.index, card: message.card});
                         break;
-                    case 'jupyterExport':
+                    case "jupyterExport":
                         this._onJupyterExport.fire(message.indexes);
                         break;
-                    case 'openInBrowser':
+                    case "openInBrowser":
                         this._onOpenInBrowser.fire(message.index);
                         break;
-                    case 'deleteSelectedCards':
+                    case "deleteSelectedCards":
                         this._onDeleteSelectedCards.fire(message.indexes);
                         break;
-                    case 'undoClicked':
+                    case "undoClicked":
                         this._undoClicked.fire();
                         break;
-                    case 'savePdf':
+                    case "savePdf":
                         this._onSavePdf.fire(message.pdf);
                         break;
                 }
-            })
+            });
         }
     }
 
@@ -201,11 +201,12 @@ export class WebviewController {
      * Add a card to the frontend by posting a message to the webview.
      * @param card  Card to add to the frontend.
      */
-    addCard(card: Card) {
-        if (this.panel) this.panel.webview.postMessage({
-            command: 'add-card',
-            card: card
+    public addCard(card: Card) {
+        if (this.panel) { this.panel.webview.postMessage({
+            command: "add-card",
+            card,
         });
+        }
     }
-    
+
 }
