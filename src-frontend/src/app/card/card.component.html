@@ -8,7 +8,7 @@
 
   <!-- Card title and title edit box -->
   <div *ngIf="!card.isCustomMarkdown">
-    <span class="card-toolbar" [style.visibility]="isSelecting ? 'hidden' : 'visible'">
+    <span class="card-toolbar">
       <button id="moveUpButton" class="react toolbar-icon" (click)="move('up')">
         <i title="Move Up" class="ms-Icon ms-Icon--ChevronUp" aria-label="Move Up"></i>
       </button>
