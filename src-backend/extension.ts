@@ -10,7 +10,7 @@ import { JupyterManager } from './jupyterManager';
 import { CardManager } from './cardManager';
 import { JSONObject } from '@phosphor/coreutils';
 import { ContentHelpers } from './contentHelpers';
-
+import { JupyterCodeLensProvider } from './editorIntegration/codeLensProvider';
 export function activate(context: vscode.ExtensionContext) {
     /**
      * Webview controller used to generate the output pane.     
@@ -236,6 +236,12 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     });
+    return {
+        hasCodeCells: (document: vscode.TextDocument, token: vscode.CancellationToken) => {
+            let provider = new JupyterCodeLensProvider();
+            return provider.hasCodeCells(document, token);
+        }
+    }
 }
 /**
      * Initialise Jupyter locally at a specific path or general path wherever appropriate.
