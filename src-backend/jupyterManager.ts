@@ -200,7 +200,20 @@ export class JupyterManager {
             return !!jupyterHelpOutput.match(/Jupyter/g);
         }
         catch (error) {
-            return false;
+            try {
+                process.platform
+                // Execute jupyter -h and check if Jupyter is present in default path the output returned.
+                let jupyterHelpOutput =
+                    execSync(
+                        'jupyter -h',
+                        { stdio: 'pipe', encoding: 'utf8', }
+                    );
+    
+                return !!jupyterHelpOutput.match(/Jupyter/g);
+            }
+            catch (error) {
+                return false;
+            }
         }
     }
     /**
