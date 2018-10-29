@@ -1,7 +1,7 @@
 {
   "name": "VSNotebooks",
   "displayName": "VSNotebooks",
-  "description": "Interactive Programming Experience for Data Scientists",
+  "description": "Jupyter Notebooks inside of VS Code",
   "version": "1.4.0",
   "license": "MIT",
   "repository": "https://github.com/pavanagrawal123/VSNotebooks",
