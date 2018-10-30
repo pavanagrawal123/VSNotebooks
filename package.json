@@ -131,6 +131,12 @@
           "when": "editorHasSelection && editorLangId == r",
           "command": "ipe.newCard",
           "group": "Python"
+        },
+        {
+          "command": "jupyter.execCurrentCell",
+          "title": "Run Cell",
+          "group": "Python",
+          "when": "jupyter.document.hasCodeCells"
         }
       ]
     }

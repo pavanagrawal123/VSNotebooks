@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import {Event, EventEmitter} from "vscode";
 import {StatusBarItem} from 'vscode';
 import * as fs from "fs";
-
+import { JupyterCodeLensProvider } from './editorIntegration/codeLensProvider';
 /**
  * Class containing the events which guide the user interaction with vscode.
  * These interactions include:
@@ -75,6 +75,7 @@ export class UserInteraction {
         context.subscriptions.push(vscode.commands.registerCommand('ipe.importNotebook', () => {
             this.importNotebook();
         }));
+        context.subscriptions.push(vscode.languages.registerCodeLensProvider(['python'], new JupyterCodeLensProvider()));
 
         // Create an status bar item in vscode to indicate the status of the Jupyter Notebook instance being used.
         this.statusIndicator = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
