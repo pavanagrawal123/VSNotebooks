@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import {Event, EventEmitter} from "vscode";
 import {StatusBarItem} from 'vscode';
 import * as fs from "fs";
-import { JupyterCodeLensProvider } from './editorIntegration/codeLensProvider';
+import { JupyterCodeLensProvider } from './editorIntegration/codeLens/codeLensProvider';
 /**
  * Class containing the events which guide the user interaction with vscode.
  * These interactions include:

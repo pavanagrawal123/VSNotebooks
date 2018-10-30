@@ -1,6 +1,6 @@
 import { Cell } from './cell';
 import { TextDocument, Range } from 'vscode';
-import { JupyterCodeLensProvider } from '../editorIntegration/codeLensProvider';
+import { JupyterCodeLensProvider } from './codeLensProvider';
 import * as vscode from 'vscode';
 import { EditorContextKey } from './editorContext';
 

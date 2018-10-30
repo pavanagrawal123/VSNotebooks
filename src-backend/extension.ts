@@ -10,7 +10,7 @@ import { JupyterManager } from './jupyterManager';
 import { CardManager } from './cardManager';
 import { JSONObject } from '@phosphor/coreutils';
 import { ContentHelpers } from './contentHelpers';
-import { JupyterCodeLensProvider } from './editorIntegration/codeLensProvider';
+import { JupyterCodeLensProvider } from './editorIntegration/codeLens/codeLensProvider';
 export function activate(context: vscode.ExtensionContext) {
     /**
      * Webview controller used to generate the output pane.     
