@@ -188,25 +188,29 @@ export class JupyterManager {
      * @returns A boolean, true if Jupyter Notebook is present, false if it is not.
      */
     public static isJupyterInPath(path?: string) {
-        try {
-            process.platform
-            // Execute jupyter -h and check if Jupyter is present in default path the output returned.
-            let jupyterHelpOutput =
-                execSync(
-                    `${/^win/.test(process.platform) ? "" : "./"}jupyter -h`,
-                    { stdio: 'pipe', encoding: 'utf8', cwd: path }
-                );
-
-            return !!jupyterHelpOutput.match(/Jupyter/g);
+        if (path) {
+            try {
+                // Execute jupyter -h and check if Jupyter is present in custom path the output returned.
+                let jupyterHelpOutput =
+                    execSync(
+                        `${/^win/.test(process.platform) ? "" : "./"}jupyter -h`,
+                        { stdio: 'pipe', encoding: 'utf8', cwd: path }
+                    );
+    
+                return !!jupyterHelpOutput.match(/Jupyter/g);
+            }
+            catch (error) {
+                return false;
+            }
         }
-        catch (error) {
+        else {
             try {
                 process.platform
                 // Execute jupyter -h and check if Jupyter is present in default path the output returned.
                 let jupyterHelpOutput =
                     execSync(
-                        'jupyter -h',
-                        { stdio: 'pipe', encoding: 'utf8', }
+                        `jupyter -h`,
+                        { stdio: 'pipe', encoding: 'utf8' }
                     );
     
                 return !!jupyterHelpOutput.match(/Jupyter/g);
