@@ -140,7 +140,12 @@ export class JupyterManager {
                     this.defineTimeout(JupyterManager.timeout, (info) => {
                         res();
                         resolve(info);
-                    }, reject);
+                    }, (error) => {
+                        // pass the error back to callback.
+                        reject(error);
+                        // stop the progress bar
+                        res()
+                    });
                 });
                 return p;
             })
