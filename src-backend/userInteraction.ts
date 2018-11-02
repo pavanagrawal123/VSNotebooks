@@ -3,6 +3,7 @@ import {Event, EventEmitter} from "vscode";
 import {StatusBarItem} from 'vscode';
 import * as fs from "fs";
 import { JupyterCodeLensProvider } from './editorIntegration/codeLens/codeLensProvider';
+import { Commands } from './constants/constants';
 /**
  * Class containing the events which guide the user interaction with vscode.
  * These interactions include:
@@ -55,24 +56,24 @@ export class UserInteraction {
      */
     constructor(private context: vscode.ExtensionContext) {
 
-        context.subscriptions.push(vscode.commands.registerCommand('ipe.showWebview', () => {
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.WebView, () => {
             this.showWebview();
         }));
 
-        context.subscriptions.push(vscode.commands.registerCommand('ipe.fullSetup', () => {
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.FullSetup, () => {
             this.fullSetup();
          }));
 
 
-        context.subscriptions.push(vscode.commands.registerCommand('ipe.newCard', () => {
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.NewCard, () => {
            this.newCard();
         }));   
         
-        context.subscriptions.push(vscode.commands.registerCommand('ipe.restartKernels', () => {
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.RestartKernels, () => {
             this.restartKernels();
         }));   
 
-        context.subscriptions.push(vscode.commands.registerCommand('ipe.importNotebook', () => {
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.ImportNotebook, () => {
             this.importNotebook();
         }));
         context.subscriptions.push(vscode.languages.registerCodeLensProvider(['python'], new JupyterCodeLensProvider()));
