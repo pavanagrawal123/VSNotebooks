@@ -243,8 +243,8 @@ export function activate(context: vscode.ExtensionContext) {
      * @param localJupyter current val of Local Jupyter
      */
 function initialiseJupyterLocally(initialisePanel: ({ baseUrl, token }: { baseUrl: any; token: any; }) => void, localJupyter: boolean) {
-    if (JupyterManager.getScriptsLocationIfSpecified()) {
-        if (!JupyterManager.isJupyterInPath(JupyterManager.getScriptsLocationIfSpecified())) {
+    if (JupyterManager.getScriptsLocation()) {
+        if (!JupyterManager.isJupyterInPath(JupyterManager.getScriptsLocation())) {
             // If its fallen in here then Jupyter doesn't exist in the custom env or path.
             vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip? Note: This defaults to the pip available on your path not environment.', 'Install')
                 .then(data => JupyterManager.installJupyter(data));
