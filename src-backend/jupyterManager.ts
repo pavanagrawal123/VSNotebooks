@@ -38,14 +38,17 @@ export class JupyterManager {
     constructor() {
 
         if (vscode.workspace.workspaceFolders) {
-            // Initialise a Jupyter Notebook in the current workspace if a workspace is set.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser', '--notebook-dir=' + vscode.workspace.workspaceFolders[0].uri.fsPath], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
             this.workspaceSet = true;
         }
+        if (JupyterManager.getScriptsLocation()) {
+            // Initialize a Jupyter Notebook automatically.
+            JupyterManager.process = spawn(`${/^win/.test(process.platform) ? "" : "./"}jupyter`, 
+            ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocation() });
+        }   
         else {
-            // Initialise a Jupyter Notebook automatically.
-            JupyterManager.process = spawn(`jupyter`, ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocationIfSpecified() });
+            JupyterManager.process = spawn('jupyter', ['notebook', '--no-browser'], { detached: false });
         }
+        
         // The stderr is process by the extractJupyterInfos function.
         JupyterManager.process.stderr.on('data',
             (data: string) =>
@@ -125,7 +128,7 @@ export class JupyterManager {
         return new Promise<{ baseUrl: string, token: string }>((resolve, reject) => {
             // The message box should include where the Jupyter Kernel starts if it exists. 
             let title: string = "Starting a Jupyter Kernel" +
-                (JupyterManager.getScriptsLocationIfSpecified() ? ` at location ${JupyterManager.getScriptsLocationIfSpecified()}` :
+                (JupyterManager.getScriptsLocation() ? ` at location ${JupyterManager.getScriptsLocation()}` :
                     "");
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
@@ -137,7 +140,12 @@ export class JupyterManager {
                     this.defineTimeout(JupyterManager.timeout, (info) => {
                         res();
                         resolve(info);
-                    }, reject);
+                    }, (error) => {
+                        // pass the error back to callback.
+                        reject(error);
+                        // stop the progress bar
+                        res()
+                    });
                 });
                 return p;
             })
@@ -185,44 +193,58 @@ export class JupyterManager {
      * @returns A boolean, true if Jupyter Notebook is present, false if it is not.
      */
     public static isJupyterInPath(path?: string) {
-        try {
-            // Execute jupyter -h and check if Jupyter is present in default path the output returned.
-            let jupyterHelpOutput =
-                execSync(
-                    'jupyter -h',
-                    { stdio: 'pipe', encoding: 'utf8', cwd: path }
-                );
-
-            return !!jupyterHelpOutput.match(/Jupyter/g);
-        }
-        catch{
+        if (path) {
             try {
+                // Execute jupyter -h and check if Jupyter is present in custom path the output returned.
                 let jupyterHelpOutput =
                     execSync(
-                        `cd ${vscode.workspace.getConfiguration().get('python.pythonPath')} && jupyter -h;`,
-                        { stdio: 'pipe', encoding: 'utf8' }
+                        `${/^win/.test(process.platform) ? "" : "./"}jupyter -h`,
+                        { stdio: 'pipe', encoding: 'utf8', cwd: path }
                     );
+    
                 return !!jupyterHelpOutput.match(/Jupyter/g);
             }
-            catch {
+            catch (error) {
+                return false;
+            }
+        }
+        else {
+            try {
+                process.platform
+                // Execute jupyter -h and check if Jupyter is present in default path the output returned.
+                let jupyterHelpOutput =
+                    execSync(
+                        `jupyter -h`,
+                        { stdio: 'pipe', encoding: 'utf8' }
+                    );
+    
+                return !!jupyterHelpOutput.match(/Jupyter/g);
+            }
+            catch (error) {
                 return false;
             }
         }
     }
     /**
-     * Check if env is set, and return env/Scripts or null. =
+     * Check if env is set, and return env/Scripts/bin or null. =
 
      * @returns string  Path of Script for the Python environment, if not available, null.
      */
-    public static getScriptsLocationIfSpecified(): string {
+    public static getScriptsLocation(): string {
         if (vscode.workspace.getConfiguration().get('python.pythonPath')) {
             let path: string = vscode.workspace.getConfiguration().get('python.pythonPath');
             let delim: string;
             //set delimineter to whatever the path uses.
             // need to only remove last part of path because it includes python. 
             if (path.indexOf("/") == -1) delim = "\\"; else delim = "/";
-            //take the path split it, take all but last, then join it again using delim.
-            let arrString: string[] = path.split(delim).slice(0, -1).concat("Scripts");
+            // if platform windows, then using Script else use bin.
+            // take the path split it, take all but last,
+            let arrString: string[] = path.split(delim).slice(0, -1);
+            // based on platform, do some custom stuff.
+            if (/^win/.test(process.platform)) {
+                arrString.concat("Scripts");
+            }
+            // then join it again using delim.
             return arrString.join(delim);
         }
         else {
