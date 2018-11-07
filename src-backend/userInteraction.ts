@@ -4,6 +4,7 @@ import {StatusBarItem} from 'vscode';
 import * as fs from "fs";
 import { JupyterCodeLensProvider } from './editorIntegration/codeLens/codeLensProvider';
 import { Commands } from './constants/constants';
+import { Interpreter } from "./interpreter";
 /**
  * Class containing the events which guide the user interaction with vscode.
  * These interactions include:
@@ -26,7 +27,11 @@ export class UserInteraction {
      */
     private _onNewCard: EventEmitter<string> = new EventEmitter();
     get onNewCard(): Event<string> { return this._onNewCard.event; }
-
+    /**
+     * Event triggered when an .ipynb file is imported.
+     */
+    private _onExecuteRange: EventEmitter<void> = new EventEmitter();
+    get onExecuteRange(): Event<void> { return this._onExecuteRange.event; }
     /**
      * Event triggered when the user requests a full setup of a Jupyter Notebook instance.
      */
@@ -59,6 +64,14 @@ export class UserInteraction {
         context.subscriptions.push(vscode.commands.registerCommand(Commands.WebView, () => {
             this.showWebview();
         }));
+        context.subscriptions.push(vscode.commands.registerCommand(Commands.ExecuteRangeInKernel, (document: vscode.TextDocument, range: vscode.Range) => {
+            if (!document || !range || range.isEmpty) {
+                return Promise.resolve();
+            }
+            const code = document.getText(range);
+            this.executeRange(code, document.languageId);
+            return Interpreter.executeCode(code, document.languageId);
+        }));
 
         context.subscriptions.push(vscode.commands.registerCommand(Commands.FullSetup, () => {
             this.fullSetup();
@@ -85,6 +98,10 @@ export class UserInteraction {
 
     private showWebview() {
         this._onShowPane.fire();
+    }
+
+    private executeRange(code : string, languageId: string) {
+        this._onExecuteRange.fire({code,languageId});
     }
 
     private fullSetup() {

@@ -4,4 +4,5 @@ export namespace Commands {
     export const NewCard = 'ipe.newCard';
     export const RestartKernels = 'ipe.newCard';
     export const ImportNotebook = 'ipe.importNotebook';
+    export const ExecuteRangeInKernel = 'ipe.executeRangeInKernel';
 }
