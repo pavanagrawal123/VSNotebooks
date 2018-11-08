@@ -30,8 +30,8 @@ export class UserInteraction {
     /**
      * Event triggered when an .ipynb file is imported.
      */
-    private _onExecuteRange: EventEmitter<{}> = new EventEmitter();
-    get onExecuteRange(): Event<{}> { return this._onExecuteRange.event; }
+    private _onExecuteRange: EventEmitter<{code: string, languageId: string}> = new EventEmitter();
+    get onExecuteRange(): Event<{code: string, languageId: string}> { return this._onExecuteRange.event; }
     /**
      * Event triggered when the user requests a full setup of a Jupyter Notebook instance.
      */

@@ -94,7 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
         cardManager.addCard(card);
         webview.addCard(card);
     });
-
+    
     /**
      * Initialise the output pane and set up the interpreter.
      * @param param0    interface containing the base url and the token of the current Jupyter Notebook.
@@ -123,7 +123,12 @@ export function activate(context: vscode.ExtensionContext) {
             interpreter.autoImportModules();
         }
     }
-
+    /**
+     * Define callback function for the execute range
+     */
+    userInteraction.onExecuteRange(({code,languageId}) => {
+        interpreter.executeCode(code, UserInteraction.determineKernel());
+    })
     /**
      * Define callback function of show output pane button.
      */

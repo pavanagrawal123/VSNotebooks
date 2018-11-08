@@ -2,6 +2,7 @@
 
 import { CodeLensProvider, TextDocument, CancellationToken, CodeLens, Command } from 'vscode';
 import { CellHelper } from './cellHelper';
+import { Commands } from '../../constants/constants';
 import * as vscode from 'vscode';
 
 export class JupyterCodeLensProvider implements CodeLensProvider {
@@ -28,7 +29,7 @@ export class JupyterCodeLensProvider implements CodeLensProvider {
             const cmd: Command = {
                 arguments: [document, cell.range],
                 title: 'Run cell',
-                command: null
+                command: Commands.ExecuteRangeInKernel
             };
             lenses.push(new CodeLens(cell.range, cmd));
         });
