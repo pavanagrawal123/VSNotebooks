@@ -12,3 +12,11 @@ Visual Studio Code with the interactivity of Jupyter Notebook.
 
 ## Development 
 This plugin is under heavy active development. Want to help? Open an issue, and I can help you get started!
+
+# Why choose this over other forks?
+* Custom environment support
+* Better styling, better use of space.
+* Cell support (pending on master)
+* Better error messages
+* Active development
+* Lots of bug fixes not present in the original repo
