@@ -30,8 +30,8 @@ export class UserInteraction {
     /**
      * Event triggered when an .ipynb file is imported.
      */
-    private _onExecuteRange: EventEmitter<void> = new EventEmitter();
-    get onExecuteRange(): Event<void> { return this._onExecuteRange.event; }
+    private _onExecuteRange: EventEmitter<{}> = new EventEmitter();
+    get onExecuteRange(): Event<{}> { return this._onExecuteRange.event; }
     /**
      * Event triggered when the user requests a full setup of a Jupyter Notebook instance.
      */
@@ -70,7 +70,6 @@ export class UserInteraction {
             }
             const code = document.getText(range);
             this.executeRange(code, document.languageId);
-            return Interpreter.executeCode(code, document.languageId);
         }));
 
         context.subscriptions.push(vscode.commands.registerCommand(Commands.FullSetup, () => {
