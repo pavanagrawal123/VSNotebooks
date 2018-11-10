@@ -22,7 +22,7 @@ export class JupyterManager {
     /**
      * Pattern which matches Jupyter Notebook urls.
      */
-    private static urlPattern = /http:\/\/[A-z0-9]+:[0-9]+\/\?token=[a-z0-9]+/gi;
+    private static urlPattern = /http:\/\/[0-z]+:[0-9]+\/\?token=[a-z0-9]+/gi;
     /**
      * The timeout set during the initialisation of a Jupyter Notebook instance.
      */
