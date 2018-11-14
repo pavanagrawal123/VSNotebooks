@@ -1,8 +1,8 @@
 {
-  "name": "VSNotebooks",
-  "displayName": "VSNotebooks",
+  "name": "VSNotebooksBeta",
+  "displayName": "VSNotebooksBeta",
   "description": "Jupyter Notebooks inside of VS Code",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "license": "MIT",
   "repository": "https://github.com/pavanagrawal123/VSNotebooks",
   "publisher": "pavan",
