@@ -239,6 +239,8 @@ export function activate(context: vscode.ExtensionContext) {
 }
 /**
      * Initialise Jupyter locally at a specific path or general path wherever appropriate.
+     * If the custom path is set, the extension will check to see if there exists a jupyter 
+     * installation. If there is not one it will fall back to not using a custom path.
      * @param initialisePanel  call back to initialisePanel
      * @param localJupyter current val of Local Jupyter
      */
@@ -246,8 +248,29 @@ function initialiseJupyterLocally(initialisePanel: ({ baseUrl, token }: { baseUr
     if (JupyterManager.getScriptsLocation()) {
         if (!JupyterManager.isJupyterInPath(JupyterManager.getScriptsLocation())) {
             // If its fallen in here then Jupyter doesn't exist in the custom env or path.
-            vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip? Note: This defaults to the pip available on your path not environment.', 'Install')
-                .then(data => JupyterManager.installJupyter(data));
+            if (!JupyterManager.isJupyterInPath()) {
+                vscode.window.showErrorMessage('VS Notebooks cannot find Jupyter in your custom environment or general path. Install using pip? Note: This defaults to the pip available on your path not environment.', 'Install')
+                    .then(data => JupyterManager.installJupyter(data));
+            }
+            else {
+                if (!JupyterManager.isJupyterInPath()) {
+                    // Ask the user to install Jupyter Notebook if not present
+                    vscode.window.showInformationMessage('The IPE extension requires Jupyter to be installed. Install now?', 'Install')
+                        .then(data => JupyterManager.installJupyter(data));
+                }
+                else {
+                    // Create a Jupyter Notebook instance automatically
+                    let jupyterManager = new JupyterManager(true);
+                    jupyterManager.getJupyterAddressAndToken()
+                        .then(info => {
+                            initialisePanel(info);
+                            if (jupyterManager.workspaceSet) {
+                                localJupyter = true;
+                            }
+                        })
+                        .catch(error => vscode.window.showErrorMessage('Error could not start: ' + error));
+                }
+            }
         }
         else {
             let jupyterManager = new JupyterManager();

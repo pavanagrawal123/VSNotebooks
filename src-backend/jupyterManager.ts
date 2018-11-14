@@ -35,12 +35,12 @@ export class JupyterManager {
     /**
      * Initialise a Jupyter Notebook process.
      */
-    constructor() {
+    constructor(ignoreCustomPath?: boolean) {
 
         if (vscode.workspace.workspaceFolders) {
             this.workspaceSet = true;
         }
-        if (JupyterManager.getScriptsLocation()) {
+        if (JupyterManager.getScriptsLocation() && !ignoreCustomPath) {
             // Initialize a Jupyter Notebook automatically.
             JupyterManager.process = spawn(`${/^win/.test(process.platform) ? "" : "./"}jupyter`, 
             ['notebook', '--no-browser'], { detached: false, cwd: JupyterManager.getScriptsLocation() });
