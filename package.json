@@ -1,8 +1,8 @@
 {
-  "name": "VSNotebooksBeta",
-  "displayName": "VSNotebooksBeta",
-  "description": "Interactive Programming Experience for Data Scientists",
-  "version": "1.4.2",
+  "name": "VSNotebooks",
+  "displayName": "VSNotebooks",
+  "description": "Jupyter Notebooks inside of VS Code",
+  "version": "1.4.3",
   "license": "MIT",
   "repository": "https://github.com/pavanagrawal123/VSNotebooks",
   "publisher": "pavan",
@@ -146,7 +146,7 @@
     "watch-backend": "tsc -watch -p ./",
     "compile": "npm run build-types && npm run compile-frontend && npm run compile-backend",
     "watch": "npm run build-types && npm run watch-backend",
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "postinstall": "node ./node_modules/vscode/bin/install && npm run build-types",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "test-frontend": "cd src-frontend && npm run test"
   },
