@@ -242,7 +242,7 @@ export class JupyterManager {
             let arrString: string[] = path.split(delim).slice(0, -1);
             // based on platform, do some custom stuff.
             if (/^win/.test(process.platform)) {
-                arrString.concat("Scripts");
+                arrString.push("Scripts");
             }
             // then join it again using delim.
             return arrString.join(delim);
