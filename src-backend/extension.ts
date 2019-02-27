@@ -130,10 +130,10 @@ export function activate(context: vscode.ExtensionContext) {
     userInteraction.onShowPane(() => {
         if (!panelInitialised) {
             // Check if user wants to use a remote kernel
-            if (vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernel')) {
+            if (vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernel')) {
                 let config = {
-                    baseUrl: vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernelAddress'),
-                    token: vscode.workspace.getConfiguration('VSNotebooks.setting').get('remoteKernelToken'),
+                    baseUrl: vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernelAddress'),
+                    token: vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernelToken'),
                 }
                 initialisePanel(config);
             }
