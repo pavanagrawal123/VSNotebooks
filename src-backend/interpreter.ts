@@ -100,8 +100,23 @@ export class Interpreter {
         let uri;
         let baseUrl = this.serverSettings.baseUrl;
         let token = this.serverSettings.token;
+        
+        let fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        let homeDir = vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernelHomeDir');
+        let filepath;
+        
+        let start = fullPath.indexOf(homeDir);
+        let end = start + homeDir.length;
+        
         if (filename) {
-            uri = vscode.Uri.parse(baseUrl + 'notebooks/' + filename + '?token=' + token);
+            if(start != -1) {
+                let relativePath = fullPath.substring(end);
+                filepath = relativePath + '/' + filename;
+            }
+            else {
+                filepath = fullPath + '/' + filename;
+            }
+            uri = vscode.Uri.parse(baseUrl + 'notebooks/' + filepath + '?token=' + token);
         } else {
             uri = vscode.Uri.parse(baseUrl + '?token=' + token);
         }
