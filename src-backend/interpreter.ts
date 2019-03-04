@@ -102,7 +102,7 @@ export class Interpreter {
         let token = this.serverSettings.token;
         
         let fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-        let homeDir = vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernelHomeDir');
+        let homeDir : string = vscode.workspace.getConfiguration('VSNotebooks').get('remoteKernelHomeDir');
         let filepath;
         
         let start = fullPath.indexOf(homeDir);
