@@ -82,11 +82,11 @@
           "default": null,
           "description": "remote kernel token"
         },
-				"VSNotebooks.remoteKernelHomeDir": {
-					"type": "string",
-					"default": null,
-					"description": "remote kernel home dir"
-				}
+	"VSNotebooks.remoteKernelHomeDir": {
+		"type": "string",
+		"default": null,
+		"description": "remote kernel home dir"
+	}
       }
     },
     "keybindings": [
